@@ -25,6 +25,7 @@ if defined?(Redmine)
       :cas_base_url                    => 'https://localhost',
       :login_without_cas               => false,
       :auto_create_users               => false,
+      :auto_register_users             => false,
       :auto_update_attributes_on_login => false
     }, :partial => 'settings/settings'
   
@@ -204,9 +205,10 @@ if defined?(ActionController)
                   # server, please refer to your CAS server documentation.
                   user.attributes = RedmineCas.user_attributes_by_session(session)
                   user.status = User::STATUS_REGISTERED
-
-                  register_automatically(user) do
-                    onthefly_creation_failed(user)
+                  unless RedmineCAS.get_setting(:auto_register_user)
+                    register_automatically(user) do
+                      onthefly_creation_failed(user)
+                    end
                   end
                 else
                 
