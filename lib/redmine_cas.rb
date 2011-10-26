@@ -25,7 +25,7 @@ if defined?(Redmine)
       :cas_base_url                    => 'https://localhost',
       :login_without_cas               => false,
       :auto_create_users               => false,
-      :auto_register_users             => false,
+      :auto_create_users_from_ldap     => false,
       :auto_update_attributes_on_login => false
     }, :partial => 'settings/settings'
   
@@ -153,7 +153,9 @@ end
 if defined?(ActionController)
   
   ActionController::Dispatcher.to_prepare do
-  
+    
+    AuthSourceLdap.send(:include, AuthSourceLdapPatch)
+ 
     # We're watching for setting updates for the plugin.
     # After each change we want to reconfigure CAS client.
     Setting.class_eval do
@@ -203,13 +205,23 @@ if defined?(ActionController)
                   # Plugin config says to create user, let's try by getting as much as possible
                   # from CAS extra user attributes. To add/remove extra attributes passed from CAS
                   # server, please refer to your CAS server documentation.
-                  user.attributes = RedmineCas.user_attributes_by_session(session)
-                  user.status = User::STATUS_REGISTERED
-                  unless RedmineCAS.get_setting(:auto_register_user)
-                    register_automatically(user) do
-                      onthefly_creation_failed(user)
-                    end
-                  end
+		  unless RedmineCas.get_setting(:auto_create_users_from_ldap)
+	                user.attributes = RedmineCas.user_attributes_by_session(session)
+        	        user.status = User::STATUS_REGISTERED
+                	register_automatically(user) do
+	                  onthefly_creation_failed(user)
+        	        end
+		  else
+			ldaps = AuthSourceLdap.all
+
+                        ldaps.each do |ldap_con|
+				user.attributes = ldap_con.get_user_custom_attributes(user.login)
+				user.status = User::STATUS_REGISTERED
+        	                register_automatically(user) do
+                	          onthefly_creation_failed(user)
+                        	end
+			end
+		  end
                 else
                 
                   # User auto-create disabled in plugin config
