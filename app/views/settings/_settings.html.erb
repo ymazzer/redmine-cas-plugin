@@ -19,9 +19,9 @@
     <em>Create Redmine users on-the-fly for successfully authenticated CAS users if they don't exist in Redmine yet</em>
   </p>
   <p>
-    <label> Auto register users</label>
-    <%= check_box_tag 'settings[auto_register_users]', true, @settings[:auto_register_users] %><br />
-    <em>Register Redmine users on-the-fly for successfully created users if they aren't registered yet</em>
+    <label> Auto create users using ldap</label>
+    <%= check_box_tag 'settings[auto_create_users_from_ldap]', true, @settings[:auto_create_users_from_ldap] %><br />
+    <em>Create Redmine users on-the-fly for successfully authenticated CAS users, using LDAP data</em>
   <p>
     <label>Update user attributes</label>
     <%= check_box_tag 'settings[auto_update_attributes_on_login]', true, @settings[:auto_update_attributes_on_login] %><br />
