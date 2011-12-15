@@ -179,7 +179,9 @@ if defined?(ActionController)
             if CASClient::Frameworks::Rails::Filter.filter(self)
             
               # User has been successfully authenticated with CAS
+              session[:cas_user].downcase!
               user = User.find_or_initialize_by_login(session[:cas_user])
+              printf("proutprout: %s", session[:cas_user]);
               unless user.new_record?
               
                 # ...and also found in Redmine
